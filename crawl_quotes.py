@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import json
 
 def save_html_file(html,path): 
     with open(path,"wb") as writing_file:
@@ -83,7 +84,7 @@ def create_append_quotes_authors_list(list_1,list_2,page_number,web_url):
         quote_html_tag = html_scrape.select('.quote')
 
 
-        for each_quote in quote_html_tag[:3]:
+        for each_quote in quote_html_tag:
             quote_obj= create_and_get_quote_obj(each_quote)    
             author_obj=create_and_get_author_details_obj(each_quote,web_url)
 
@@ -105,12 +106,10 @@ quotes_and_author_details_obj = {}
 quotes_and_author_details_obj['quotes'] = quotes
 quotes_and_author_details_obj['authors'] = authors
 
-print(len(quotes))
-print(len(authors))
+print(quotes_and_author_details_obj)
 
-# print(quotes_and_author_details_obj)
-
-
+with open('quotes.json','w') as json_file:
+    json.dump(quotes_and_author_details_obj,json_file)
 
 
 

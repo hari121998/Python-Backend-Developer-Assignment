@@ -1,1 +1,0 @@
-print(quotes_and_author_details_obj)
