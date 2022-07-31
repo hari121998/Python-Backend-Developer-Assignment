@@ -1,0 +1,1 @@
+print(soup.find_all('.quote'))
