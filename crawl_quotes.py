@@ -62,6 +62,24 @@ def create_and_get_author_details_obj(each_tag,page_url):
 
     return author_container
 
+def request_and_get_parsed_file(page_url):
+        request_html_file = requests.get(page_url)
+
+        save_html_file(request_html_file.content,"crawling.html")
+
+        html_file = open_html_file("crawling.html")        
+
+        return get_html_parsed_file(html_file)
+
+def iterating_and_appending_each_quote(quote_tag,list_1,list_2):
+    for each_quote in quote_tag:
+        quote_obj= create_and_get_quote_obj(each_quote)    
+        author_obj=create_and_get_author_details_obj(each_quote,web_url)
+
+        list_1.append(quote_obj)
+        list_2.append(author_obj)
+
+
 def create_append_quotes_authors_list(list_1,list_2,page_number,web_url):
 
     page_number = page_number+1
@@ -70,26 +88,12 @@ def create_append_quotes_authors_list(list_1,list_2,page_number,web_url):
     if page_number>10:
         return list_1,list_2
     else:
-        request_html_file = requests.get(page_url)
-
-        save_html_file(request_html_file.content,"crawling.html")
-
-        html_file = open_html_file("crawling.html")        
-
-        parsered_file = get_html_parsed_file(html_file)
-
-        html_scrape=parsered_file.select_one("body>div>div:nth-child(2)>div.col-md-8")
+        parsed_file =request_and_get_parsed_file(page_url)
+        html_scrape=parsed_file.select_one("body>div>div:nth-child(2)>div.col-md-8")
         #css selector file_path extracted by copying from developer_tools -> copy_selector
-
         quote_html_tag = html_scrape.select('.quote')
 
-
-        for each_quote in quote_html_tag:
-            quote_obj= create_and_get_quote_obj(each_quote)    
-            author_obj=create_and_get_author_details_obj(each_quote,web_url)
-
-            list_1.append(quote_obj)
-            list_2.append(author_obj)
+        iterating_and_appending_each_quote(quote_html_tag,list_1,list_2)
         return create_append_quotes_authors_list(list_1,list_2,page_number,web_url)
 
 web_url = "http://quotes.toscrape.com"
@@ -106,6 +110,8 @@ quotes_and_author_details_obj = {}
 quotes_and_author_details_obj['quotes'] = quotes
 quotes_and_author_details_obj['authors'] = authors
 
+print(len(quotes))
+print(len(authors))
 print(quotes_and_author_details_obj)
 
 with open('quotes.json','w') as json_file:
