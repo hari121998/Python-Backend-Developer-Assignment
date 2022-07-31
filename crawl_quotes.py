@@ -5,7 +5,7 @@ def save_html_file(html,path):
     with open(path,"wb") as writing_file:
         writing_file.write(html)
 
-def get_html_file(path):
+def open_html_file(path):
     with open(path,"rb") as read_file:
         return read_file.read()
 
@@ -18,62 +18,79 @@ def get_tag_list_text(html):
 def get_html_parsed_file(file):
     return BeautifulSoup(file,"html.parser")
 
-def get_author_details(url):
-    request_file = requests.get(url)
-    save_html_file(request_file.content,"author_details.html")
-    author_html_file = get_html_file("author_details.html")
+def create_and_get_quote_obj(each_tag):
+
+    quotes_container = {}
+    quote_text = each_tag.select_one('span').text.strip()
+
+    quotes_container["quote"] = quote_text[1:len(quote_text)-1]
+    quotes_container['author'] = each_tag.select_one('.author').text.strip()
+    tags_html_list = each_tag.select('div .tags a')
+    quotes_container["tags"] = get_tag_list_text(tags_html_list)
+
+    return quotes_container
+
+
+def get_author_birth_details(url):
+
+    requested_file = requests.get(url)
+    
+    save_html_file(requested_file.content,"author_details.html")
+    author_html_file = open_html_file("author_details.html")
     parsed_file = get_html_parsed_file(author_html_file)
+
     scrape_tag = parsed_file.select_one('body > div > div.author-details')
-    data = scrape_tag.select('p span')
-    print(data[0].text+data[1].text)
+    born_html_file = scrape_tag.select('p span')
+    
+    first_born_text = born_html_file[0].text.strip()
+    second_born_text = born_html_file[1].text.strip()
+
+    return first_born_text+" "+second_born_text
 
 
+def create_and_get_author_details_obj(each_tag):
+
+    author_container={}
+    author_reference_url = each_tag.select_one('span a')['href']
+    author_reference_url =page_url+ author_reference_url +'/'
+    
+    author_container["name"]= each_tag.select_one('.author').text.strip()
+    author_container["born"] = get_author_birth_details(author_reference_url)
+    author_container['reference'] = author_reference_url
+
+    return author_container
 
 
-
-
-
-page_url = "http://quotes.toscrape.com/"
+page_url = "http://quotes.toscrape.com"
 
 request_html_file = requests.get(page_url)
 
 save_html_file(request_html_file.content,"crawling.html")
 
-html_file = get_html_file("crawling.html")        
+html_file = open_html_file("crawling.html")        
 
-html_parsered_file = get_html_parsed_file(html_file)
+parsered_file = get_html_parsed_file(html_file)
 
-html_file_scrape_tag = html_parsered_file.select_one("body > div > div:nth-child(2) > div.col-md-8")
+html_scrape=parsered_file.select_one("body>div>div:nth-child(2)>div.col-md-8")
 #css selector file_path extracted by copying from developer_tools -> copy_selector
 
-quote_html_tag = html_file_scrape_tag.select('.quote')
+quote_html_tag = html_scrape.select('.quote')
 
 quotes_authors_tags_list = []
 author_details_list=[]
-for each_quote in quote_html_tag[:1]:
+for each_quote in quote_html_tag[:3]:
+    quote_obj= create_and_get_quote_obj(each_quote)    
+    author_obj=create_and_get_author_details_obj(each_quote)
 
-    quotes_container = {}
-    author_container={}
+    quotes_authors_tags_list.append(quote_obj)
+    author_details_list.append(author_obj)
 
-    quotes_container["quote"] = each_quote.select_one('span').text.strip()
-    quotes_container['author'] = each_quote.select_one('.author').text.strip()
-    tags_html_list = each_quote.select('div .tags a') 
-    quotes_container["tags"] = get_tag_list_text(tags_html_list)
-
-    author_reference_url = each_quote.select_one('span a')['href']
-    author_reference_url =page_url+ author_reference_url +'/'
-    print(author_reference_url)
-    get_author_details(author_reference_url)
-
-    author_container['reference'] = author_reference_url
-    # print(author_reference_url)
-
-
-    quotes_authors_tags_list.append(quotes_container)
-
-# print(quotes_authors_tags_list)
     
+quotes_and_author_details_obj = {}
+quotes_and_author_details_obj['quotes'] = quotes_authors_tags_list
+quotes_and_author_details_obj['authors'] = author_details_list
 
+print(quotes_and_author_details_obj)
 
 
 
