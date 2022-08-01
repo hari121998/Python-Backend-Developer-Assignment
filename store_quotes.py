@@ -38,6 +38,20 @@ def inserting_data_into_table(insert_query):
     connection.commit()
     connection.close()
 
+def get_and_insert_author(id,each_obj,insert_string):
+    name = each_obj['name']
+    born = each_obj['born']
+    reference = each_obj['reference']
+    
+    insert_data = insert_string.format(id,name,born,reference)
+    inserting_data_into_table(insert_data)
+
+def get_and_insert_tags(quote_count,insert_tag,tags_list):
+    
+    for each_tag in tags_list:
+        string_format = insert_tag.format(each_tag,quote_count)
+        inserting_data_into_table(string_format)
+
 
 quotes_authors_obj = get_json_data()
 quotes_list = get_list_from_quotes_authors_obj(quotes_authors_obj,"quotes")
@@ -50,6 +64,7 @@ quotes_table='''
             id INTEGER NOT NULL PRIMARY KEY,
             quote TEXT,
             author_name VARCHAR(250),
+            no_of_tags INTEGER,
             author_id INTEGER,
             FOREIGN KEY (author_id) REFERENCES authors(id) 
             ON DELETE CASCADE
@@ -59,14 +74,14 @@ authors_table='''
         CREATE TABLE authors(
             id INTEGER NOT NULL PRIMARY KEY,
             author_name VARCHAR(250),
-            born TEXT(300),
-            reference TEXT(400)
+            born VARCHAR(200),
+            reference VARCHAR(250)
             );
             '''
 tags_table = '''
         CREATE TABLE tags(
-            id INTEGER,
-            tag VARCHAR(250),
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tag_name VARCHAR(250),
             quote_id INTEGER,
             FOREIGN KEY (quote_id) REFERENCES quotes(id) 
             ON DELETE CASCADE
@@ -81,15 +96,45 @@ insert_author = '''
     INSERT INTO 
         authors(id,author_name,born,reference)
     VALUES(
-        {},
+         {},
         "{}",
         "{}",
         "{}"
+    );
+'''
+insert_quotes = '''
+    INSERT INTO 
+        quotes(id,quote,author_name,no_of_tags,author_id)
+    VALUES(
+        {},
+       "{}",
+       "{}",
+        {},
+        {}
+    );
+'''
+insert_tags = '''
+    INSERT INTO 
+        tags(tag_name,quote_id)
+    VALUES(
+    "{}",
+     {}
     );
 '''
 
 id_count = 0
 for each in authors_new_list:
     id_count+=1
-    insert_data = insert_author.format(id_count,each['name'],each['born'],each['reference'])
+    get_and_insert_author(id_count,each,insert_author)
+    
+
+id_count=0
+for each in quotes_list[:89]:
+    id_count+=1
+    quote=each['quote']
+    author_name = each['author']
+    no_of_tags = len(each['tags'])
+    author_id = author_names_list.index(author_name)+1
+    insert_data = insert_quotes.format(id_count,quote,author_name,no_of_tags,author_id)
     inserting_data_into_table(insert_data)
+    get_and_insert_tags(id_count,insert_tags,each['tags'])
