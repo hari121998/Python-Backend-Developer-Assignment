@@ -29,8 +29,15 @@ def create_table(table,table_name):
     cursor_obj.execute(drop_sql.format(table_name))
     cursor_obj.execute('''PRAGMA foreign_keys = ON''')
     cursor_obj.execute(table)
-    print("Table Created")
     connection.close()
+
+def inserting_data_into_table(insert_query):
+    connection  = connect_sqlite_to_database()
+    cursor_obj = connection.cursor()
+    cursor_obj.execute(insert_query)
+    connection.commit()
+    connection.close()
+
 
 quotes_authors_obj = get_json_data()
 quotes_list = get_list_from_quotes_authors_obj(quotes_authors_obj,"quotes")
@@ -52,8 +59,8 @@ authors_table='''
         CREATE TABLE authors(
             id INTEGER NOT NULL PRIMARY KEY,
             author_name VARCHAR(250),
-            born TEXT,
-            reference TEXT
+            born TEXT(300),
+            reference TEXT(400)
             );
             '''
 tags_table = '''
@@ -66,7 +73,23 @@ tags_table = '''
             );
             '''
 
-
 create_table(authors_table,"authors")
 create_table(quotes_table,"quotes")
 create_table(tags_table,"tags")
+
+insert_author = '''
+    INSERT INTO 
+        authors(id,author_name,born,reference)
+    VALUES(
+        {},
+        "{}",
+        "{}",
+        "{}"
+    );
+'''
+
+id_count = 0
+for each in authors_new_list:
+    id_count+=1
+    insert_data = insert_author.format(id_count,each['name'],each['born'],each['reference'])
+    inserting_data_into_table(insert_data)
