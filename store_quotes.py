@@ -1,6 +1,6 @@
 import json 
 import sqlite3
-from tkinter.font import names
+import json
 
 
 
@@ -12,14 +12,12 @@ def get_json_data():
 def get_list_from_quotes_authors_obj(json_obj,obj_name):
     return json_obj[obj_name]
 
-def distinct_author_list(list_1):
+def distinct_author_names_list(list_1):
     name_list = []
-    new_list= []
     for each_name in list_1:
         if each_name['name'] not in name_list:
-            name_list.append(each_name['name'])
-            new_list.append(each_name)
-    return new_list,name_list
+            name_list.append(each_name['name'])            
+    return name_list
 
 def connect_sqlite_to_database():
     return sqlite3.connect('quotes.db')
@@ -50,6 +48,9 @@ def get_and_insert_author(id,each_obj,insert_string):
 
 def get_and_insert_quotes(id,each_obj,insert_string):
     quote=each_obj['quote']
+    if id ==91:
+        quote= quote[:10]+quote[12:31]+quote[32:]
+        
     author_name = each_obj['author']
     no_of_tags = len(each_obj['tags'])
 
@@ -67,14 +68,14 @@ def get_and_insert_tags(quote_count,insert_tag,tags_list):
 
 quotes_authors_obj = get_json_data()
 quotes_list = get_list_from_quotes_authors_obj(quotes_authors_obj,"quotes")
-authors_list = get_list_from_quotes_authors_obj(quotes_authors_obj,"authors")
+authors_new_list = get_list_from_quotes_authors_obj(quotes_authors_obj,"authors")
 
-authors_new_list,author_names_list = distinct_author_list(authors_list)
+author_names_list = distinct_author_names_list(authors_new_list)
 
 quotes_table='''
         CREATE TABLE quotes(
             id INTEGER NOT NULL PRIMARY KEY,
-            quote TEXT,
+            quote VARCHAR,
             author_name VARCHAR(250),
             no_of_tags INTEGER,
             author_id INTEGER,
@@ -119,7 +120,7 @@ insert_quotes = '''
         quotes(id,quote,author_name,no_of_tags,author_id)
     VALUES(
         {},
-       "{}",
+       """{}""",
        "{}",
         {},
         {}
@@ -135,13 +136,16 @@ insert_tags = '''
 '''
 
 id_count = 0
-for each in authors_new_list:
+for each_item in authors_new_list:
     id_count+=1
-    get_and_insert_author(id_count,each,insert_author)
+    get_and_insert_author(id_count,each_item,insert_author)
     
 
 id_count=0
-for each in quotes_list[:89]:
+for each_item in quotes_list:
     id_count+=1
-    get_and_insert_quotes(id_count,each,insert_quotes)
-    get_and_insert_tags(id_count,insert_tags,each['tags'])
+    get_and_insert_quotes(id_count,each_item,insert_quotes)
+    get_and_insert_tags(id_count,insert_tags,each_item['tags'])
+    
+
+print("done")

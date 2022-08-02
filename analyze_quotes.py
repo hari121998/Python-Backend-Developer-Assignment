@@ -1,6 +1,5 @@
 import sqlite3
 
-
 def start_connection_with_database():
     return sqlite3.connect("quotes.db")
 

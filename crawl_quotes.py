@@ -24,7 +24,7 @@ def create_and_get_quote_obj(each_tag):
 
     quotes_container = {}
     quote_text = each_tag.select_one('span').text.strip()
-
+    
     quotes_container["quote"] = quote_text[1:len(quote_text)-1]
     quotes_container['author'] = each_tag.select_one('.author').text.strip()
     tags_html_list = each_tag.select('div .tags a')
@@ -92,29 +92,40 @@ def create_append_quotes_authors_list(list_1,list_2,page_number,web_url):
         html_scrape=parsed_file.select_one("body>div>div:nth-child(2)>div.col-md-8")
         #css selector file_path extracted by copying from developer_tools -> copy_selector
         quote_html_tag = html_scrape.select('.quote')
-
+        
         iterating_and_appending_each_quote(quote_html_tag,list_1,list_2)
         return create_append_quotes_authors_list(list_1,list_2,page_number,web_url)
+
+def get_author_unique_list(authors_list):
+    new_list=[]
+    unique_list = []
+    for each_author in authors_list:
+        if each_author['name'] not in new_list:
+            new_list.append(each_author['name'])
+            unique_list.append(each_author)
+    return unique_list
 
 web_url = "http://quotes.toscrape.com"
 
 page_num = 0
 quotes_list = []
-author__list=[]
+author_list=[]
 
-quotes,authors=create_append_quotes_authors_list(quotes_list,author__list,page_num,web_url)
-    
+quotes,authors=create_append_quotes_authors_list(quotes_list,author_list,page_num,web_url)
+
+
+authors_unique_list = get_author_unique_list(authors)
+
 quotes_and_author_details_obj = {}
 quotes_and_author_details_obj['quotes'] = quotes
-quotes_and_author_details_obj['authors'] = authors
+quotes_and_author_details_obj['authors'] = authors_unique_list
 
-print(len(quotes))
-print(len(authors))
-print(quotes_and_author_details_obj)
+# print(len(quotes))
+# print(authors_unique_list)
+# print(quotes_and_author_details_obj)
 
 with open('quotes.json','w') as json_file:
     json.dump(quotes_and_author_details_obj,json_file)
     
-
-
+print("Scrapped data succesfully Stored in quotes.json_file")
 
