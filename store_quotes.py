@@ -34,7 +34,7 @@ def create_table(table,table_name):
 def inserting_data_into_table(insert_query):
     connection  = connect_sqlite_to_database()
     cursor_obj = connection.cursor()
-    cursor_obj.execute(insert_query)
+    cursor_obj.executescript(insert_query)
     connection.commit()
     connection.close()
 
@@ -148,4 +148,4 @@ for each_item in quotes_list:
     get_and_insert_tags(id_count,insert_tags,each_item['tags'])
     
 
-print("done")
+print("Data created and Inserted into quotes.db")
