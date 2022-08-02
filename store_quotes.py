@@ -2,6 +2,8 @@ import json
 import sqlite3
 from tkinter.font import names
 
+
+
 def get_json_data():
     with open('quotes.json','r') as read_file:
         obj_file = json.loads(read_file.read())
@@ -44,6 +46,16 @@ def get_and_insert_author(id,each_obj,insert_string):
     reference = each_obj['reference']
     
     insert_data = insert_string.format(id,name,born,reference)
+    inserting_data_into_table(insert_data)
+
+def get_and_insert_quotes(id,each_obj,insert_string):
+    quote=each_obj['quote']
+    author_name = each_obj['author']
+    no_of_tags = len(each_obj['tags'])
+
+    author_id = author_names_list.index(author_name)+1
+    insert_data = insert_string.format(id,quote,author_name,no_of_tags,author_id)
+
     inserting_data_into_table(insert_data)
 
 def get_and_insert_tags(quote_count,insert_tag,tags_list):
@@ -131,10 +143,5 @@ for each in authors_new_list:
 id_count=0
 for each in quotes_list[:89]:
     id_count+=1
-    quote=each['quote']
-    author_name = each['author']
-    no_of_tags = len(each['tags'])
-    author_id = author_names_list.index(author_name)+1
-    insert_data = insert_quotes.format(id_count,quote,author_name,no_of_tags,author_id)
-    inserting_data_into_table(insert_data)
+    get_and_insert_quotes(id_count,each,insert_quotes)
     get_and_insert_tags(id_count,insert_tags,each['tags'])

@@ -102,9 +102,7 @@ page_num = 0
 quotes_list = []
 author__list=[]
 
-
 quotes,authors=create_append_quotes_authors_list(quotes_list,author__list,page_num,web_url)
-
     
 quotes_and_author_details_obj = {}
 quotes_and_author_details_obj['quotes'] = quotes
@@ -116,7 +114,7 @@ print(quotes_and_author_details_obj)
 
 with open('quotes.json','w') as json_file:
     json.dump(quotes_and_author_details_obj,json_file)
-
+    
 
 
 
