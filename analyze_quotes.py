@@ -55,7 +55,6 @@ table_4 = '''
 '''
 
 
-
 get_query_from_table(table_1)
 get_query_from_table(table_2)
 get_query_from_table(table_3)

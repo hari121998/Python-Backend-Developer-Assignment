@@ -21,7 +21,6 @@ def get_html_parsed_file(file):
     return BeautifulSoup(file,"html.parser")
 
 def create_and_get_quote_obj(each_tag):
-
     quotes_container = {}
     quote_text = each_tag.select_one('span').text.strip()
     
@@ -31,7 +30,6 @@ def create_and_get_quote_obj(each_tag):
     quotes_container["tags"] = get_tag_list_text(tags_html_list)
 
     return quotes_container
-
 
 def get_author_birth_details(url):
 
@@ -48,7 +46,6 @@ def get_author_birth_details(url):
     second_born_text = born_html_file[1].text.strip()
 
     return first_born_text+" "+second_born_text
-
 
 def create_and_get_author_details_obj(each_tag,page_url):
 
@@ -78,7 +75,6 @@ def iterating_and_appending_each_quote(quote_tag,list_1,list_2):
 
         list_1.append(quote_obj)
         list_2.append(author_obj)
-
 
 def create_append_quotes_authors_list(list_1,list_2,page_number,web_url):
 
@@ -112,7 +108,6 @@ quotes_list = []
 author_list=[]
 
 quotes,authors=create_append_quotes_authors_list(quotes_list,author_list,page_num,web_url)
-
 
 authors_unique_list = get_author_unique_list(authors)
 

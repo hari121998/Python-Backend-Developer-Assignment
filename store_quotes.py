@@ -58,7 +58,6 @@ def get_and_insert_quotes(id,each_obj,insert_string):
     inserting_data_into_table(insert_data)
 
 def get_and_insert_tags(quote_count,insert_tag,tags_list):
-    
     for each_tag in tags_list:
         string_format = insert_tag.format(each_tag,quote_count)
         inserting_data_into_table(string_format)
