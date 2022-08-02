@@ -2,8 +2,6 @@ import json
 import sqlite3
 
 
-
-
 def get_json_data():
     with open('quotes.json','r') as read_file:
         obj_file = json.loads(read_file.read())
