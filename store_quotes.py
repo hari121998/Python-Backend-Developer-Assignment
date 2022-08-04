@@ -108,8 +108,7 @@ def get_and_insert_author_into_database(each_author_row,insert_string):
 def get_and_insert_quotes_into_database(id,each_row_quotes,insert_string):
     quote=each_row_quotes['quote'].strip('... ')
     if id ==91:
-        quote= quote[:10]+quote[12:31]+quote[32:]
-        
+        quote= quote[:10]+quote[12:31]+quote[32:]   
     author_name = each_row_quotes['author']
     author_id = author_names_list.index(author_name)+1
     quotes_insert_data = insert_string.format(id,quote,author_id)
