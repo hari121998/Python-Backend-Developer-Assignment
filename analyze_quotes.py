@@ -42,17 +42,18 @@ def create_query_for_authors_no_of_quotations():
 def create_query_for_min_max_avg_tags():
     return '''
     SELECT
-        COUNT() as no_of_tags,
-        MAX(tag_name) as maximum_of_tags,
-        MIN(tag_name) as minimum_of_tags,
-        AVG(tag_name) as average_of_tags
+        MAX(total_tags) as maximum_tags,
+        MIN(total_tags) as minimum_tags,
+        AVG(total_tags) as average_tags
         
-    FROM 
-        tags
-    GROUP BY 
-    quote_id
-    ORDER BY 
-    no_of_tags DESC;
+    FROM (SELECT    
+            COUNT(tag_name) as total_tags 
+        FROM 
+            tags
+        GROUP BY
+            quote_id
+        ORDER BY 
+            total_tags DESC);
     '''
 def create_query_for_maximum_no_of_authors_on_quotations():
     number = input("Please Enter the Number of highest authors on quotations: ")
