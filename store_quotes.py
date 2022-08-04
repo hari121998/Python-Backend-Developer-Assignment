@@ -117,7 +117,7 @@ insert_quotes = '''
         quotes(id,quote,author_name,no_of_tags,author_id)
     VALUES(
         {},
-       """{}""",
+       "{}",
        "{}",
         {},
         {}

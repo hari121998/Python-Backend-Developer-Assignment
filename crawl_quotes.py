@@ -2,125 +2,107 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
-def save_html_file(html,path): 
-    with open(path,"wb") as writing_file:
-        writing_file.write(html)
+def request_and_get_parsed_file(page_url):
+        requested_file = requests.get(page_url)
+        soup = BeautifulSoup(requested_file.content,'html.parser')
+        return soup
 
-def open_html_file(path):
-    with open(path,"rb") as read_file:
-        return read_file.read()
+def request_parsed_file_return_quote_list_container(page_url):
+    parsed_file =request_and_get_parsed_file(page_url)
+    html_scrape=parsed_file.select_one("body>div>div:nth-child(2)>div.col-md-8")
+    #css selector file_path extracted by copying from developer_tools -> copy_selector
+    return html_scrape.select('.quote')
 
-def get_tag_list_text(html):
+def get_tags_list_for_each_quote(tags_html_list):
     new_tag_list=[]
-    for each_tag in html:
-        new_tag_list.append(each_tag.text.strip())   
-
+    for each_tag_name in tags_html_list:
+        new_tag_list.append(each_tag_name.text.strip())   
     return new_tag_list
 
-def get_html_parsed_file(file):
-    return BeautifulSoup(file,"html.parser")
+def create_and_get_quote_object(each_quote_element):
+    quote_object_container = {}
+    quote_text = each_quote_element.select_one('span').text.strip()
 
-def create_and_get_quote_obj(each_tag):
-    quotes_container = {}
-    quote_text = each_tag.select_one('span').text.strip()
+    # In the below line we cannot use strip('"') because text contains invalid inverted quotes 
+    quote_object_container["quote"] = quote_text.strip('\u201c').strip('\u201d')
+    quote_object_container['author'] = each_quote_element.select_one('.author').text.strip()
+
+    tags_html_list = each_quote_element.select('div .tags a')
+    quote_object_container["tags"] = get_tags_list_for_each_quote(tags_html_list)
+    return quote_object_container
+
+def iterating_and_appending_each_quote(quote_tags_container,quote_list,):
+    for each_quote_tag in quote_tags_container:
+        each_quote_object= create_and_get_quote_object(each_quote_tag)    
+        quote_list.append(each_quote_object)
+       
+def create_append_quotes_list(quote_list,page_url):
+    all_quote_html_tags =request_parsed_file_return_quote_list_container(page_url)
+    iterating_and_appending_each_quote(all_quote_html_tags,quote_list)
+    return quote_list
+
+def get_author_born_details_from_bio_page(author_bio_page):
+    author_parsed_file = request_and_get_parsed_file(author_bio_page)
+    author_bio_container = author_parsed_file.select_one('body > div > div.author-details')
+    author_born_details = author_bio_container.select('p span')
+
+    born_date = author_born_details[0].text.strip()
+    born_location = author_born_details[1].text.strip()
+    return born_date+" "+born_location
+
+def create_and_get_author_object_from_each_quote_tag(each_quote_tag):
+    each_author_object = {}
+    author_bio_page = each_quote_tag.select_one('span a')['href']+'/'
+    author_bio_page = "http://quotes.toscrape.com" + author_bio_page 
+
+    each_author_object['name'] = each_quote_tag.select_one('.author').text.strip()
+    each_author_object['born'] = get_author_born_details_from_bio_page(author_bio_page)
+    each_author_object['reference'] = author_bio_page
     
-    quotes_container["quote"] = quote_text[1:len(quote_text)-1]
-    quotes_container['author'] = each_tag.select_one('.author').text.strip()
-    tags_html_list = each_tag.select('div .tags a')
-    quotes_container["tags"] = get_tag_list_text(tags_html_list)
-
-    return quotes_container
-
-def get_author_birth_details(url):
-
-    requested_file = requests.get(url)
-
-    save_html_file(requested_file.content,"author_details.html")
-    author_html_file = open_html_file("author_details.html")
-    parsed_file = get_html_parsed_file(author_html_file)
-
-    scrape_tag = parsed_file.select_one('body > div > div.author-details')
-    born_html_file = scrape_tag.select('p span')
+    return each_author_object
     
-    first_born_text = born_html_file[0].text.strip()
-    second_born_text = born_html_file[1].text.strip()
-
-    return first_born_text+" "+second_born_text
-
-def create_and_get_author_details_obj(each_tag,page_url):
-
-    author_container={}
-    author_reference_url = each_tag.select_one('span a')['href']
-    author_reference_url =page_url+ author_reference_url +'/'
-    
-    author_container["name"]= each_tag.select_one('.author').text.strip()
-    author_container["born"] = get_author_birth_details(author_reference_url)
-    author_container['reference'] = author_reference_url
-
-    return author_container
-
-def request_and_get_parsed_file(page_url):
-        request_html_file = requests.get(page_url)
-
-        save_html_file(request_html_file.content,"crawling.html")
-
-        html_file = open_html_file("crawling.html")        
-
-        return get_html_parsed_file(html_file)
-
-def iterating_and_appending_each_quote(quote_tag,list_1,list_2):
-    for each_quote in quote_tag:
-        quote_obj= create_and_get_quote_obj(each_quote)    
-        author_obj=create_and_get_author_details_obj(each_quote,web_url)
-
-        list_1.append(quote_obj)
-        list_2.append(author_obj)
-
-def create_append_quotes_authors_list(list_1,list_2,page_number,web_url):
-
-    page_number = page_number+1
-    page_url = web_url+"/page/"+str(page_number)+"/"
-
-    if page_number>10:
-        return list_1,list_2
-    else:
-        parsed_file =request_and_get_parsed_file(page_url)
-        html_scrape=parsed_file.select_one("body>div>div:nth-child(2)>div.col-md-8")
-        #css selector file_path extracted by copying from developer_tools -> copy_selector
-        quote_html_tag = html_scrape.select('.quote')
-        
-        iterating_and_appending_each_quote(quote_html_tag,list_1,list_2)
-        return create_append_quotes_authors_list(list_1,list_2,page_number,web_url)
+def iterating_and_appending_each_author(quote_html_tags,author_list):
+    for each_quote_tag in quote_html_tags:
+        each_author_object= create_and_get_author_object_from_each_quote_tag(each_quote_tag)    
+        author_list.append(each_author_object)
+       
+def create_append_authors_list(author_list,page_url):
+    all_quote_html_tags = request_parsed_file_return_quote_list_container(page_url)
+    iterating_and_appending_each_author(all_quote_html_tags,author_list)
+    return author_list
 
 def get_author_unique_list(authors_list):
     new_list=[]
-    unique_list = []
+    unique_author_list = []
     for each_author in authors_list:
         if each_author['name'] not in new_list:
             new_list.append(each_author['name'])
-            unique_list.append(each_author)
-    return unique_list
+            unique_author_list.append(each_author)
+    return unique_author_list
 
-web_url = "http://quotes.toscrape.com"
+def request_and_return_next_page_url_if_exists(page_url):
+    parsed_file = request_and_get_parsed_file(page_url)
+    next_page_class = parsed_file.select('nav ul li')[-1]['class']
+    if ''.join(next_page_class) == 'next':
+        next_page_url =parsed_file.select('nav ul li a')[-1]['href']
+        return "http://quotes.toscrape.com" + next_page_url    
+    return ""
 
-page_num = 0
-quotes_list = []
+quote_list = []
 author_list=[]
+page_url = "http://quotes.toscrape.com"
+while True: 
+    quote_list_container = create_append_quotes_list(quote_list,page_url)
+    author_list_container = create_append_authors_list(author_list,page_url)
+    page_url = request_and_return_next_page_url_if_exists(page_url)
+    if page_url=="":
+        break
 
-quotes,authors=create_append_quotes_authors_list(quotes_list,author_list,page_num,web_url)
-
-authors_unique_list = get_author_unique_list(authors)
-
-quotes_and_author_details_obj = {}
-quotes_and_author_details_obj['quotes'] = quotes
-quotes_and_author_details_obj['authors'] = authors_unique_list
-
-# print(len(quotes))
-# print(authors_unique_list)
-# print(quotes_and_author_details_obj)
+quotes_and_author_details_object = {}
+quotes_and_author_details_object['quotes'] = quote_list
+quotes_and_author_details_object['authors'] = get_author_unique_list(author_list)
 
 with open('quotes.json','w') as json_file:
-    json.dump(quotes_and_author_details_obj,json_file)
-    
+    json.dump(quotes_and_author_details_object,json_file)
 print("Scrapped data succesfully Stored in quotes.json_file")
 
