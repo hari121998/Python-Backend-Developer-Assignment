@@ -22,7 +22,7 @@ def create_query_for_no_of_quotations():
         quotes;
     '''
 def create_query_for_authors_no_of_quotations():
-    word = input("please enter the valid authors name: ")
+    word = input("please enter the valid authors name: ").lower()
     query= '''
     SELECT 
         author_name,
@@ -32,7 +32,7 @@ def create_query_for_authors_no_of_quotations():
         ON quotes.author_id = authors.id
         
     WHERE 
-        authors.author_name = '{}'
+        LOWER(authors.author_name) = '{}'
     GROUP BY 
         author_id;
     '''
