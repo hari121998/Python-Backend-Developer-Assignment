@@ -3,29 +3,29 @@ import sqlite3
 
 def get_json_data():
     with open('quotes.json','r') as read_file:
-        obj_file = json.loads(read_file.read())
-    return obj_file
+        object_file = json.loads(read_file.read())
+    return object_file
 
-def get_list_from_quotes_authors_obj(json_obj,obj_name):
-    return json_obj[obj_name]
+def get_list_from_quotes_authors_obj(json_object,object_name):
+    return json_object[object_name]
 
-def distinct_author_names_list(list_1):
-    name_list = []
-    for each_name in list_1:
-        if each_name['name'] not in name_list:
-            name_list.append(each_name['name'])            
-    return name_list
+def distinct_author_names_list(author_list):
+    author_name_list = []
+    for each_name in author_list:
+        if each_name['name'] not in author_name_list:
+            author_name_list.append(each_name['name'])            
+    return author_name_list
 
 def connect_sqlite_to_database():
     return sqlite3.connect('quotes.db')
 
 def create_table_in_database(table_statement,table_name):
     connection = connect_sqlite_to_database()
-    cursor_obj = connection.cursor()
+    cursor_object = connection.cursor()
     drop_sql = "DROP TABLE IF EXISTS {}"
-    cursor_obj.execute(drop_sql.format(table_name))
-    cursor_obj.execute('''PRAGMA foreign_keys = ON''')
-    cursor_obj.execute(table_statement)
+    cursor_object.execute(drop_sql.format(table_name))
+    cursor_object.execute('''PRAGMA foreign_keys = ON''')
+    cursor_object.execute(table_statement)
     connection.close()
 
 def create_and_get_quotes_table_statement():
@@ -90,10 +90,10 @@ def create_and_get_tags_insert_statement():
     );
     '''
 
-def inserting_data_into_table(insert_query):
+def inserting_data_into_table(insert_table_query):
     connection  = connect_sqlite_to_database()
     cursor_obj = connection.cursor()
-    cursor_obj.executescript(insert_query)
+    cursor_obj.executescript(insert_table_query)
     connection.commit()
     connection.close()
 
@@ -106,9 +106,7 @@ def get_and_insert_author_into_database(each_author_row,insert_string):
     inserting_data_into_table(insert_data)
 
 def get_and_insert_quotes_into_database(id,each_row_quotes,insert_string):
-    quote=each_row_quotes['quote'].strip('... ')
-    if id ==91:
-        quote= quote[:10]+quote[12:31]+quote[32:]   
+    quote=each_row_quotes['quote'].strip('... ')   
     author_name = each_row_quotes['author']
     author_id = author_names_list.index(author_name)+1
     quotes_insert_data = insert_string.format(id,quote,author_id)

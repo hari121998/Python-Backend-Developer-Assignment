@@ -21,11 +21,12 @@ def get_tags_list_for_each_quote(tags_html_list):
 
 def create_and_get_quote_object(each_quote_element):
     quote_object_container = {}
-    quote_text = each_quote_element.select_one('span').text.strip()
+    quote_text = each_quote_element.select_one('span').text.strip().replace('"','')
+    author_name_about = each_quote_element.select_one('span a')['href'].split('/')
 
     # In the below line we cannot use strip('"') because text contains invalid inverted quotes 
     quote_object_container["quote"] = quote_text.strip('\u201c').strip('\u201d')
-    quote_object_container['author'] = each_quote_element.select_one('.author').text.strip()
+    quote_object_container['author'] = author_name_about[-1].replace('-',' ')
 
     tags_html_list = each_quote_element.select('div .tags a')
     quote_object_container["tags"] = get_tags_list_for_each_quote(tags_html_list)
@@ -52,12 +53,12 @@ def get_author_born_details_from_bio_page(author_bio_page):
 
 def create_and_get_author_object_from_each_quote_tag(each_quote_tag):
     each_author_object = {}
-    author_bio_page = each_quote_tag.select_one('span a')['href']+'/'
-    author_bio_page = "http://quotes.toscrape.com" + author_bio_page 
+    author_bio_page = each_quote_tag.select_one('span a')['href']
+    author_bio_page_url = "http://quotes.toscrape.com" + author_bio_page+'/'
 
-    each_author_object['name'] = each_quote_tag.select_one('.author').text.strip()
-    each_author_object['born'] = get_author_born_details_from_bio_page(author_bio_page)
-    each_author_object['reference'] = author_bio_page
+    each_author_object['name'] = author_bio_page.split('/')[-1].replace('-',' ')
+    each_author_object['born'] = get_author_born_details_from_bio_page(author_bio_page_url)
+    each_author_object['reference'] = author_bio_page_url
     
     return each_author_object
     
